@@ -31,15 +31,20 @@ public class Main {
             String description = splitData[4];
             String price = splitData[5].split("\\.")[0];
 
-            finalList.add("document.getElementsByClassName('btn-02-blue btn-left')[2].click();"); // 新增
+            finalList.add("document.getElementsByClassName('btn-02-blue btn-left')[3].click();"); // 新增
             finalList.add("document.getElementsByClassName('dropdown-menu inner')[13].getElementsByTagName('li')[2].getElementsByTagName('a')[0].click();"); // 請款大類 (團康獎勵金及忘年餐會)
             finalList.add("document.getElementsByClassName('dropdown-menu inner')[14].getElementsByTagName('li')[2].getElementsByTagName('a')[0].click();"); // 請款中類 (一般團康)
             finalList.add("document.getElementsByClassName('dropdown-menu inner')[15].getElementsByTagName('li')[0].getElementsByTagName('a')[0].click();"); // 費用屬性 (一般)
-            finalList.add(String.format("document.getElementById('InvoiceExpenseDesc').value = '%s';", description)); // 請款說明
-            if ("".equals(invoice)) {
+            finalList.add(String.format("document.getElementById('InvoiceExpenseDesc').value = \"%s\";", description)); // 請款說明
+            if ("".equals(invoice) || "收據".equals(invoice)) {
                 finalList.add("document.getElementsByClassName('dropdown-menu inner')[20].getElementsByTagName('li')[1].getElementsByTagName('a')[0].click();"); // 憑證類別 (收據)
+                invoice = "";
             } else {
                 finalList.add("document.getElementsByClassName('dropdown-menu inner')[20].getElementsByTagName('li')[0].getElementsByTagName('a')[0].click();"); // 憑證類別 (發票)
+                // 發票號碼有打 '-' 
+                if (invoice.length() == 11 && invoice.contains("-")) {
+                    invoice = String.format("%s%s", invoice.split("-")[0], invoice.split("-")[1]);
+                }
             }
             finalList.add(String.format("document.getElementById('TaxIdNum').value = '%s';", sellerId)); // 賣方統編
             finalList.add(String.format("document.getElementById('CertificateNum').value = '%s';", invoice)); // 發票號碼
@@ -52,7 +57,7 @@ public class Main {
             }
             finalList.add(String.format("document.getElementsByClassName('input h30')[2].value = '%s';", price)); // 分攤金額
             finalList.add("document.getElementById('popConfirm').click();"); // 完成
-            finalList.add(String.format("console.log('M %s, %s');\n", splitData[0], splitData[4])); // 完成
+            finalList.add(String.format("console.log(\"%s, %s\");\n", splitData[0], splitData[4])); // 完成
 
         });
 
@@ -64,7 +69,13 @@ public class Main {
 
         String returnDate = null;
 
-        if (date.contains("月") && date.contains("日")) {
+        if (date.contains("年") && date.contains("月") && date.contains("日")) {
+            // 格式 => 2020年12月31日
+            Integer year = Integer.parseInt(date.split("年")[0]);
+            Integer month = Integer.parseInt(date.split("年")[1].split("月")[0]);
+            Integer day = Integer.parseInt(date.split("年")[1].split("月")[1].split("日")[0]);
+            returnDate = String.format("%04d-%02d-%02d", year, month, day);
+        } else if (date.contains("月") && date.contains("日")) {
             // 格式 => 12月31日
             Integer month = Integer.parseInt(date.split("月")[0]);
             Integer day = Integer.parseInt(date.split("月")[1].split("日")[0]);
